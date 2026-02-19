@@ -3,126 +3,108 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ИТУДА — Твоя соцсеть</title>
+    <title>ИТУДА 2.0 — Твоя Соцсеть</title>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore-compat.js"></script>
-    
     <style>
-        :root { --primary: #6c5ce7; --google: #4285F4; --bg: #f0f2f5; --white: #ffffff; }
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); margin: 0; color: #2d3436; }
+        :root { 
+            --primary: #6c5ce7; --bg: #f0f2f5; --card: #ffffff; --text: #2d3436; --border: #eee;
+        }
+        body.dark { 
+            --bg: #1a1a1a; --card: #2d2d2d; --text: #f0f0f0; --border: #444;
+        }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; transition: 0.3s; }
         
-        /* Авторизация */
-        #auth-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(8px); }
-        .auth-card { background: var(--white); padding: 40px; border-radius: 20px; width: 350px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
-        input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
-        .btn { width: 100%; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: 10px; transition: 0.3s; }
-        .btn-main { background: var(--primary); color: white; }
-        .btn-google { background: var(--google); color: white; display: flex; align-items: center; justify-content: center; gap: 10px; }
-        
-        /* Интерфейс */
-        header { background: var(--primary); color: white; padding: 10px 5%; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
+        header { background: var(--primary); color: white; padding: 10px 5%; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
         .container { max-width: 600px; margin: 20px auto; padding: 0 15px; }
-        .post-card { background: white; padding: 20px; border-radius: 15px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-        .post-header { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
-        .avatar { width: 45px; height: 45px; border-radius: 50%; background: #eee; border: 2px solid var(--primary); }
         
-        textarea { width: 100%; height: 80px; border: 1px solid #eee; border-radius: 10px; padding: 10px; resize: none; font-family: inherit; box-sizing: border-box; }
+        .post-card { background: var(--card); padding: 20px; border-radius: 15px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); position: relative; border: 1px solid var(--border); }
+        .avatar { width: 45px; height: 45px; border-radius: 50%; border: 2px solid var(--primary); }
+        
+        .btn { padding: 10px 15px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+        .btn-main { background: var(--primary); color: white; width: 100%; margin-top: 10px; }
+        .btn-theme { background: rgba(255,255,255,0.2); color: white; font-size: 20px; }
+        
+        .actions { display: flex; gap: 15px; margin-top: 15px; border-top: 1px solid var(--border); padding-top: 10px; }
+        .action-btn { background: none; border: none; color: var(--text); cursor: pointer; display: flex; align-items: center; gap: 5px; opacity: 0.8; }
+        .action-btn:hover { opacity: 1; color: var(--primary); }
+        
+        .comments-section { margin-top: 15px; font-size: 14px; background: rgba(0,0,0,0.03); padding: 10px; border-radius: 10px; }
+        .comment { margin-bottom: 8px; border-bottom: 1px solid var(--border); padding-bottom: 4px; }
+        .comment-input { width: 100%; background: transparent; border: 1px solid var(--border); border-radius: 5px; color: var(--text); padding: 5px; margin-top: 5px; }
+
+        #profile-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center; z-index: 2000; }
+        .modal-content { background: var(--card); padding: 30px; border-radius: 20px; width: 300px; text-align: center; }
+        
+        textarea { width: 100%; height: 80px; border: 1px solid var(--border); border-radius: 10px; padding: 10px; resize: none; font-family: inherit; background: var(--card); color: var(--text); box-sizing: border-box; }
         .hidden { display: none !important; }
+        .del-btn { position: absolute; top: 15px; right: 15px; cursor: pointer; color: #ff7675; background: none; border: none; font-size: 20px; }
     </style>
 </head>
-<body>
+<body class="">
 
     <div id="auth-overlay">
-        <div class="auth-card">
-            <h2 id="auth-title">ИТУДА</h2>
-            <div id="reg-name-container" class="hidden">
-                <input type="text" id="reg-name" placeholder="Твоё имя">
-            </div>
-            <input type="email" id="email" placeholder="Email">
-            <input type="password" id="password" placeholder="Пароль">
-            
-            <button class="btn btn-main" onclick="handleAuth()" id="auth-btn">Войти</button>
-            <button class="btn btn-google" onclick="signInWithGoogle()">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" width="18"> Вход через Google
-            </button>
-            
-            <p style="cursor:pointer; color: var(--primary); font-size: 14px; margin-top: 15px;" onclick="toggleReg()" id="toggle-text">Нет аккаунта? Создать</p>
+        <div style="background: white; padding: 40px; border-radius: 20px; text-align: center; color: #222;">
+            <h2>ИТУДА 🚀</h2>
+            <button class="btn btn-main" onclick="signInWithGoogle()" style="background: #4285F4;">Войти через Google</button>
         </div>
     </div>
 
     <div id="app" class="hidden">
         <header>
-            <div style="font-size: 24px; font-weight: 900;">🚀 ИТУДА</div>
-            <button onclick="auth.signOut()" style="background:none; border:1px solid white; color:white; padding:5px 15px; border-radius:20px; cursor:pointer;">Выйти</button>
+            <div style="font-size: 22px; font-weight: 900; cursor: pointer;" onclick="showProfile()">📱 ПРОФИЛЬ</div>
+            <div style="display: flex; gap: 10px;">
+                <button class="btn btn-theme" onclick="toggleTheme()">🌓</button>
+                <button onclick="auth.signOut()" style="background:none; border:1px solid white; color:white; padding:5px 12px; border-radius:20px; cursor:pointer;">Выход</button>
+            </div>
         </header>
 
         <div class="container">
             <div class="post-card">
-                <textarea id="post-text" placeholder="Что происходит в твоём мире?"></textarea>
+                <textarea id="post-text" placeholder="Что у тебя нового?"></textarea>
                 <button class="btn btn-main" onclick="sendPost()">Опубликовать</button>
             </div>
             <div id="feed"></div>
         </div>
     </div>
 
+    <div id="profile-modal" class="hidden" onclick="this.classList.add('hidden')">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <img id="p-avatar" class="avatar" style="width: 80px; height: 80px; margin-bottom: 10px;">
+            <h2 id="p-name">Имя Фамилия</h2>
+            <hr style="border-color: var(--border)">
+            <p id="p-stats">Загрузка статистики...</p>
+            <button class="btn btn-main" onclick="document.getElementById('profile-modal').classList.add('hidden')">Закрыть</button>
+        </div>
+    </div>
+
     <script>
-        // ТВОЯ КОНФИГУРАЦИЯ
         const firebaseConfig = {
             apiKey: "AIzaSyDm6_A5tpKNQBs9B2GgpZugFSzEw2uZuoU",
             authDomain: "ituda-a4fb2.firebaseapp.com",
             projectId: "ituda-a4fb2",
             storageBucket: "ituda-a4fb2.firebasestorage.app",
             messagingSenderId: "1080871557171",
-            appId: "1:1080871557171:web:c9a514bcfac4cfe7502b46",
-            measurementId: "G-5BBW96GD77"
+            appId: "1:1080871557171:web:c9a514bcfac4cfe7502b46"
         };
 
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.firestore();
 
-        let isRegMode = false;
-
-        function toggleReg() {
-            isRegMode = !isRegMode;
-            document.getElementById('reg-name-container').classList.toggle('hidden');
-            document.getElementById('auth-title').innerText = isRegMode ? "Регистрация" : "ИТУДА";
-            document.getElementById('auth-btn').innerText = isRegMode ? "Создать аккаунт" : "Войти";
-            document.getElementById('toggle-text').innerText = isRegMode ? "Уже есть аккаунт? Войти" : "Нет аккаунта? Создать";
+        // Тема
+        if(localStorage.getItem('dark') === 'true') document.body.classList.add('dark');
+        function toggleTheme() {
+            document.body.classList.toggle('dark');
+            localStorage.setItem('dark', document.body.classList.contains('dark'));
         }
 
-        // Вход через Google
         async function signInWithGoogle() {
             const provider = new firebase.auth.GoogleAuthProvider();
-            try {
-                const result = await auth.signInWithPopup(provider);
-                await saveUserToDb(result.user.uid, result.user.displayName);
-            } catch (e) { alert(e.message); }
+            await auth.signInWithPopup(provider);
         }
 
-        // Обычная почта/пароль
-        async function handleAuth() {
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            const name = document.getElementById('reg-name').value;
-
-            try {
-                if (isRegMode) {
-                    const res = await auth.createUserWithEmailAndPassword(email, password);
-                    await res.user.updateProfile({ displayName: name });
-                    await saveUserToDb(res.user.uid, name);
-                } else {
-                    await auth.signInWithEmailAndPassword(email, password);
-                }
-            } catch (e) { alert(e.message); }
-        }
-
-        async function saveUserToDb(uid, name) {
-            await db.collection("users").doc(uid).set({ name: name }, { merge: true });
-        }
-
-        // Проверка входа
         auth.onAuthStateChanged(user => {
             if (user) {
                 document.getElementById('auth-overlay').classList.add('hidden');
@@ -134,37 +116,91 @@
             }
         });
 
-        // Отправка поста
         async function sendPost() {
             const text = document.getElementById('post-text').value;
             if(!text.trim()) return;
-
             await db.collection("posts").add({
                 text: text,
-                author: auth.currentUser.displayName || auth.currentUser.email,
+                author: auth.currentUser.displayName,
+                uid: auth.currentUser.uid,
+                likes: 0,
+                likedBy: [],
+                comments: [],
                 createdAt: firebase.firestore.FieldValue.serverTimestamp()
             });
             document.getElementById('post-text').value = "";
         }
 
-        // Загрузка постов
+        async function likePost(id, likedBy) {
+            const uid = auth.currentUser.uid;
+            if(likedBy.includes(uid)) return alert("Ты уже лайкнул!");
+            await db.collection("posts").doc(id).update({
+                likes: firebase.firestore.FieldValue.increment(1),
+                likedBy: firebase.firestore.FieldValue.arrayUnion(uid)
+            });
+        }
+
+        async function addComment(id) {
+            const input = document.getElementById(`comm-${id}`);
+            if(!input.value.trim()) return;
+            await db.collection("posts").doc(id).update({
+                comments: firebase.firestore.FieldValue.arrayUnion({
+                    user: auth.currentUser.displayName,
+                    text: input.value
+                })
+            });
+            input.value = "";
+        }
+
+        async function deletePost(id) {
+            if(confirm("Удалить этот пост навсегда?")) await db.collection("posts").doc(id).delete();
+        }
+
+        function showProfile() {
+            const user = auth.currentUser;
+            document.getElementById('p-avatar').src = `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.displayName}`;
+            document.getElementById('p-name').innerText = user.displayName;
+            document.getElementById('profile-modal').classList.remove('hidden');
+            
+            db.collection("posts").where("uid", "==", user.uid).get().then(snap => {
+                let totalLikes = 0;
+                snap.forEach(doc => totalLikes += (doc.data().likes || 0));
+                document.getElementById('p-stats').innerText = `Постов: ${snap.size} | Лайков собрано: ${totalLikes}`;
+            });
+        }
+
         function loadPosts() {
             db.collection("posts").orderBy("createdAt", "desc").onSnapshot(snap => {
                 const feed = document.getElementById('feed');
                 feed.innerHTML = "";
                 snap.forEach(doc => {
                     const p = doc.data();
+                    const id = doc.id;
+                    const isMy = p.uid === auth.currentUser.uid;
                     const avatar = `https://api.dicebear.com/7.x/avataaars/svg?seed=${p.author}`;
+                    
+                    let commsHtml = p.comments.map(c => `<div class="comment"><b>${c.user}:</b> ${c.text}</div>`).join('');
+                    
                     feed.innerHTML += `
                         <div class="post-card">
-                            <div class="post-header">
+                            ${isMy ? `<button class="del-btn" onclick="deletePost('${id}')">🗑️</button>` : ''}
+                            <div class="post-header" style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
                                 <img src="${avatar}" class="avatar">
                                 <div>
                                     <div style="font-weight:bold;">${p.author}</div>
-                                    <div style="font-size:12px; color:#999;">${p.createdAt ? p.createdAt.toDate().toLocaleString() : 'сейчас'}</div>
+                                    <div style="font-size:11px; opacity:0.6;">${p.createdAt?.toDate().toLocaleString() || 'недавно'}</div>
                                 </div>
                             </div>
-                            <div>${p.text}</div>
+                            <div style="font-size:16px;">${p.text}</div>
+                            <div class="actions">
+                                <button class="action-btn" onclick="likePost('${id}', ${JSON.stringify(p.likedBy)})">❤️ ${p.likes || 0}</button>
+                                <button class="action-btn" onclick="document.getElementById('c-box-${id}').classList.toggle('hidden')">💬 ${p.comments.length}</button>
+                            </div>
+                            <div id="c-box-${id}" class="hidden comments-section">
+                                ${commsHtml}
+                                <input id="comm-${id}" class="comment-input" placeholder="Напиши коммент и нажми Enter" 
+                                    onkeypress="if(event.key==='Enter') addComment('${id}')">
+                            </div>
                         </div>
                     `;
                 });
