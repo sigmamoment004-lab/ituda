@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ИТУДА — Твоя соцсеть</title>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore-compat.js"></script>
+    
+    <style>
+        :root { --primary: #6c5ce7; --google: #4285F4; --bg: #f0f2f5; --white: #ffffff; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); margin: 0; color: #2d3436; }
+        
+        /* Авторизация */
+        #auth-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(8px); }
+        .auth-card { background: var(--white); padding: 40px; border-radius: 20px; width: 350px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+        input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+        .btn { width: 100%; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: 10px; transition: 0.3s; }
+        .btn-main { background: var(--primary); color: white; }
+        .btn-google { background: var(--google); color: white; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        
+        /* Интерфейс */
+        header { background: var(--primary); color: white; padding: 10px 5%; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
+        .container { max-width: 600px; margin: 20px auto; padding: 0 15px; }
+        .post-card { background: white; padding: 20px; border-radius: 15px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .post-header { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+        .avatar { width: 45px; height: 45px; border-radius: 50%; background: #eee; border: 2px solid var(--primary); }
+        
+        textarea { width: 100%; height: 80px; border: 1px solid #eee; border-radius: 10px; padding: 10px; resize: none; font-family: inherit; box-sizing: border-box; }
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+
+    <div id="auth-overlay">
+        <div class="auth-card">
+            <h2 id="auth-title">ИТУДА</h2>
+            <div id="reg-name-container" class="hidden">
+                <input type="text" id="reg-name" placeholder="Твоё имя">
+            </div>
+            <input type="email" id="email" placeholder="Email">
+            <input type="password" id="password" placeholder="Пароль">
+            
+            <button class="btn btn-main" onclick="handleAuth()" id="auth-btn">Войти</button>
+            <button class="btn btn-google" onclick="signInWithGoogle()">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" width="18"> Вход через Google
+            </button>
+            
+            <p style="cursor:pointer; color: var(--primary); font-size: 14px; margin-top: 15px;" onclick="toggleReg()" id="toggle-text">Нет аккаунта? Создать</p>
+        </div>
+    </div>
+
+    <div id="app" class="hidden">
+        <header>
+            <div style="font-size: 24px; font-weight: 900;">🚀 ИТУДА</div>
+            <button onclick="auth.signOut()" style="background:none; border:1px solid white; color:white; padding:5px 15px; border-radius:20px; cursor:pointer;">Выйти</button>
+        </header>
+
+        <div class="container">
+            <div class="post-card">
+                <textarea id="post-text" placeholder="Что происходит в твоём мире?"></textarea>
+                <button class="btn btn-main" onclick="sendPost()">Опубликовать</button>
+            </div>
+            <div id="feed"></div>
+        </div>
+    </div>
+
+    <script>
+        // ТВОЯ КОНФИГУРАЦИЯ
+        const firebaseConfig = {
+            apiKey: "AIzaSyDm6_A5tpKNQBs9B2GgpZugFSzEw2uZuoU",
+            authDomain: "ituda-a4fb2.firebaseapp.com",
+            projectId: "ituda-a4fb2",
+            storageBucket: "ituda-a4fb2.firebasestorage.app",
+            messagingSenderId: "1080871557171",
+            appId: "1:1080871557171:web:c9a514bcfac4cfe7502b46",
+            measurementId: "G-5BBW96GD77"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        let isRegMode = false;
+
+        function toggleReg() {
+            isRegMode = !isRegMode;
+            document.getElementById('reg-name-container').classList.toggle('hidden');
+            document.getElementById('auth-title').innerText = isRegMode ? "Регистрация" : "ИТУДА";
+            document.getElementById('auth-btn').innerText = isRegMode ? "Создать аккаунт" : "Войти";
+            document.getElementById('toggle-text').innerText = isRegMode ? "Уже есть аккаунт? Войти" : "Нет аккаунта? Создать";
+        }
+
+        // Вход через Google
+        async function signInWithGoogle() {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            try {
+                const result = await auth.signInWithPopup(provider);
+                await saveUserToDb(result.user.uid, result.user.displayName);
+            } catch (e) { alert(e.message); }
+        }
+
+        // Обычная почта/пароль
+        async function handleAuth() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const name = document.getElementById('reg-name').value;
+
+            try {
+                if (isRegMode) {
+                    const res = await auth.createUserWithEmailAndPassword(email, password);
+                    await res.user.updateProfile({ displayName: name });
+                    await saveUserToDb(res.user.uid, name);
+                } else {
+                    await auth.signInWithEmailAndPassword(email, password);
+                }
+            } catch (e) { alert(e.message); }
+        }
+
+        async function saveUserToDb(uid, name) {
+            await db.collection("users").doc(uid).set({ name: name }, { merge: true });
+        }
+
+        // Проверка входа
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                document.getElementById('auth-overlay').classList.add('hidden');
+                document.getElementById('app').classList.remove('hidden');
+                loadPosts();
+            } else {
+                document.getElementById('auth-overlay').classList.remove('hidden');
+                document.getElementById('app').classList.add('hidden');
+            }
+        });
+
+        // Отправка поста
+        async function sendPost() {
+            const text = document.getElementById('post-text').value;
+            if(!text.trim()) return;
+
+            await db.collection("posts").add({
+                text: text,
+                author: auth.currentUser.displayName || auth.currentUser.email,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            document.getElementById('post-text').value = "";
+        }
+
+        // Загрузка постов
+        function loadPosts() {
+            db.collection("posts").orderBy("createdAt", "desc").onSnapshot(snap => {
+                const feed = document.getElementById('feed');
+                feed.innerHTML = "";
+                snap.forEach(doc => {
+                    const p = doc.data();
+                    const avatar = `https://api.dicebear.com/7.x/avataaars/svg?seed=${p.author}`;
+                    feed.innerHTML += `
+                        <div class="post-card">
+                            <div class="post-header">
+                                <img src="${avatar}" class="avatar">
+                                <div>
+                                    <div style="font-weight:bold;">${p.author}</div>
+                                    <div style="font-size:12px; color:#999;">${p.createdAt ? p.createdAt.toDate().toLocaleString() : 'сейчас'}</div>
+                                </div>
+                            </div>
+                            <div>${p.text}</div>
+                        </div>
+                    `;
+                });
+            });
+        }
+    </script>
+</body>
+</html>
