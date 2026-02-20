@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ИТУДА ULTRA</title>
+    <title>ИТУДА ULTRA 2.3</title>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore-compat.js"></script>
@@ -25,7 +25,6 @@
 
         .container { max-width: 650px; margin: 20px auto; padding: 0 15px; }
 
-        /* Поле ввода */
         .create-post { 
             background: var(--card); border-radius: 20px; padding: 20px; border: 1px solid var(--border);
             box-shadow: 0 10px 30px rgba(0,0,0,0.05); margin-bottom: 30px;
@@ -35,7 +34,6 @@
             resize: none; outline: none; font-family: inherit; margin-bottom: 15px;
         }
 
-        /* Посты */
         .post { 
             background: var(--card); border-radius: 24px; padding: 20px; margin-bottom: 25px; 
             border: 1px solid var(--border); box-shadow: 0 4px 20px rgba(0,0,0,0.02);
@@ -51,12 +49,10 @@
         .btn-act { background: none; border: none; color: var(--text); cursor: pointer; font-size: 15px; opacity: 0.7; transition: 0.2s; }
         .btn-act:hover { opacity: 1; color: var(--accent); transform: scale(1.05); }
 
-        /* Комментарии */
         .comments { background: rgba(0,0,0,0.02); border-radius: 15px; padding: 15px; margin-top: 15px; font-size: 14px; }
         .comment { margin-bottom: 10px; display: flex; justify-content: space-between; }
-        .comm-input { width: 100%; padding: 10px; border-radius: 10px; border: 1px solid var(--border); background: var(--bg); color: var(--text); margin-top: 10px; }
+        .comm-input { width: 100%; padding: 10px; border-radius: 10px; border: 1px solid var(--border); background: var(--bg); color: var(--text); margin-top: 10px; box-sizing: border-box; }
 
-        /* Модалки */
         .modal { 
             position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(5px);
             display: flex; align-items: center; justify-content: center; z-index: 2000;
@@ -83,10 +79,10 @@
 
     <div id="app" class="container hidden">
         <div class="create-post">
-            <textarea id="post-text" placeholder="Расскажи что-нибудь..."></textarea>
+            <textarea id="post-text" placeholder="Что нового, сигма?"></textarea>
             <div id="img-indicator" style="font-size:11px; color:var(--accent); margin-bottom:10px;"></div>
             <div style="display:flex; justify-content: space-between; align-items: center;">
-                <button class="btn-act" onclick="addImg()"><i class="fa-solid fa-image"></i> Фото по ссылке</button>
+                <button class="btn-act" onclick="addImg()"><i class="fa-solid fa-image"></i> Прикрепить фото</button>
                 <button class="btn-p" style="width: auto;" onclick="sendPost()">Опубликовать</button>
             </div>
         </div>
@@ -95,10 +91,10 @@
 
     <div id="modal-profile" class="modal hidden">
         <div class="modal-box">
-            <h3>Твой Профиль</h3>
-            <input id="u-name" class="input-style" placeholder="Твое имя">
-            <input id="u-avatar" class="input-style" placeholder="Ссылка на аватарку">
-            <button class="btn-p" onclick="saveProfile()">Сохранить</button>
+            <h3>Настройки профиля</h3>
+            <input id="u-name" class="input-style" placeholder="Имя">
+            <input id="u-avatar" class="input-style" placeholder="Ссылка на фото аватара">
+            <button class="btn-p" onclick="saveProfile()">Сохранить изменения</button>
             <p style="cursor:pointer; font-size:12px; margin-top:15px; opacity:0.5" onclick="closeModal()">Закрыть</p>
         </div>
     </div>
@@ -106,7 +102,7 @@
     <div id="auth-screen" class="modal">
         <div class="modal-box">
             <h1 style="color:var(--accent)">🚀 ИТУДА</h1>
-            <p>Добро пожаловать в твою личную соцсеть</p>
+            <p>Входи и создавай контент</p>
             <button class="btn-p" onclick="login()" style="background:#4285F4"><i class="fa-brands fa-google"></i> Войти через Google</button>
         </div>
     </div>
@@ -124,6 +120,7 @@
         const auth = firebase.auth();
         const db = firebase.firestore();
 
+        const DEFAULT_AVATAR = "https://www.shutterstock.com/image-vector/user-profile-icon-vector-avatar-600nw-2558760599.jpg";
         let currentImg = "";
         let userData = { name: "", avatar: "" };
 
@@ -174,7 +171,7 @@
         function closeModal() { document.querySelectorAll('.modal').forEach(m => m.classList.add('hidden')); }
 
         function addImg() {
-            const url = prompt("Вставь ссылку на фото:");
+            const url = prompt("Вставь прямую ссылку на фото:");
             if(url) { currentImg = url; document.getElementById('img-indicator').innerText = "📷 Фото прикреплено"; }
         }
 
@@ -198,7 +195,7 @@
                     const p = doc.data();
                     const id = doc.id;
                     const isMy = p.uid === auth.currentUser.uid;
-                    const av = p.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${p.author}`;
+                    const av = (p.avatar && p.avatar.trim() !== "") ? p.avatar : DEFAULT_AVATAR;
 
                     feed.innerHTML += `
                         <div class="post">
@@ -221,7 +218,7 @@
                                         <span><b>${c.user}:</b> ${c.text}</span>
                                         ${c.uid === auth.currentUser.uid ? `<i class="fa-solid fa-xmark" style="opacity:0.3;cursor:pointer" onclick="delComm('${id}', ${i})"></i>` : ''}
                                     </div>`).join('')}</div>
-                                <input class="comm-input" placeholder="Напиши комментарий..." onkeypress="if(event.key==='Enter') addComm('${id}', this.value)">
+                                <input class="comm-input" placeholder="Напиши коммент и нажми Enter" onkeypress="if(event.key==='Enter') addComm('${id}', this.value)">
                             </div>
                         </div>
                     `;
