@@ -3,94 +3,72 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ИТУДА NEXUS</title>
+    <title>ИТУДА TITAN v4.0</title>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore-compat.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;900&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
+        /* ГЛОБАЛЬНЫЕ СТИЛИ (ОКОЛО 100 СТРОК ТОЛЬКО ДИЗАЙНА) */
         :root {
-            --accent: #6c5ce7; --bg: #f3f5f9; --text: #2d3436;
-            --card: #ffffff; --border: rgba(0,0,0,0.06);
-            --shadow: 0 8px 30px rgba(0,0,0,0.04);
+            --primary: #6c5ce7; --bg: #f0f2f5; --text: #2d3436;
+            --card: #ffffff; --border: rgba(0,0,0,0.08); --shadow: 0 10px 30px rgba(0,0,0,0.05);
         }
         body.dark {
-            --bg: #0d1117; --text: #c9d1d9; --card: #161b22; --border: rgba(255,255,255,0.1);
+            --bg: #0b0e14; --text: #e4e6eb; --card: #1c1e21; --border: rgba(255,255,255,0.1);
         }
-        * { box-sizing: border-box; transition: background 0.2s, color 0.2s; }
-        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; overflow-x: hidden; }
-
-        /* Шапка */
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; transition: 0.3s; }
+        
         header { 
             position: sticky; top: 0; z-index: 1000; background: var(--card); 
-            border-bottom: 1px solid var(--border); padding: 10px 5%; 
-            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 1px solid var(--border); padding: 0 5%; height: 70px;
+            display: flex; justify-content: space-between; align-items: center; box-shadow: var(--shadow);
         }
-        .logo { font-weight: 800; font-size: 24px; color: var(--accent); cursor: pointer; }
-
-        /* Навигация */
-        .nav { display: flex; gap: 20px; font-size: 20px; }
-        .nav i { cursor: pointer; opacity: 0.5; }
-        .nav i.active { opacity: 1; color: var(--accent); }
-
-        .container { max-width: 600px; margin: 20px auto; padding-bottom: 100px; }
-
-        /* Карточки */
-        .card { 
-            background: var(--card); border-radius: 20px; border: 1px solid var(--border);
-            padding: 20px; margin-bottom: 20px; box-shadow: var(--shadow);
-        }
-
-        /* Профиль */
-        .profile-header { text-align: center; padding: 20px; }
-        .profile-avatar { width: 100px; height: 100px; border-radius: 30px; object-fit: cover; margin-bottom: 15px; border: 3px solid var(--accent); }
-        .stats { display: flex; justify-content: space-around; margin: 20px 0; font-size: 14px; }
-
-        /* Сообщения (ЛС) */
-        .im-container { height: 70vh; display: flex; flex-direction: column; }
-        .im-messages { flex: 1; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 10px; }
-        .bubble { max-width: 80%; padding: 10px 15px; border-radius: 15px; font-size: 14px; }
-        .bubble.sent { align-self: flex-end; background: var(--accent); color: white; }
-        .bubble.received { align-self: flex-start; background: var(--border); }
-
-        /* Посты */
-        .post-head { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
-        .avatar-sm { width: 40px; height: 40px; border-radius: 12px; cursor: pointer; }
-        .post-img { width: 100%; border-radius: 15px; margin-top: 10px; }
-
-        /* Кнопки */
-        .btn { 
-            border: none; padding: 10px 20px; border-radius: 12px; cursor: pointer; 
-            font-weight: 600; font-family: inherit; transition: 0.2s;
-        }
-        .btn-main { background: var(--accent); color: white; width: 100%; }
-        .btn-outline { background: transparent; border: 1px solid var(--accent); color: var(--accent); }
+        .logo { font-family: 'Montserrat', sans-serif; font-weight: 900; font-size: 26px; color: var(--primary); cursor: pointer; }
         
+        .nav { display: flex; gap: 25px; }
+        .nav i { font-size: 22px; cursor: pointer; opacity: 0.5; transition: 0.3s; }
+        .nav i:hover, .nav i.active { opacity: 1; color: var(--primary); transform: translateY(-2px); }
+
+        .container { max-width: 700px; margin: 30px auto; padding: 0 15px; min-height: 100vh; }
+
+        /* ЭЛЕМЕНТЫ ИНТЕРФЕЙСА */
+        .card { background: var(--card); border-radius: 25px; padding: 25px; border: 1px solid var(--border); box-shadow: var(--shadow); margin-bottom: 25px; animation: fadeInUp 0.5s ease; }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        .avatar { width: 50px; height: 50px; border-radius: 15px; object-fit: cover; cursor: pointer; background: #eee; }
+        .btn { border: none; padding: 12px 24px; border-radius: 15px; cursor: pointer; font-weight: 700; transition: 0.3s; font-family: inherit; }
+        .btn-main { background: var(--primary); color: white; box-shadow: 0 5px 15px rgba(108, 92, 231, 0.3); }
+        .btn-main:hover { filter: brightness(1.1); transform: scale(1.02); }
+        .btn-outline { background: transparent; border: 2px solid var(--primary); color: var(--primary); }
+
+        /* СООБЩЕНИЯ */
+        .chat-box { height: 400px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding: 10px; background: rgba(0,0,0,0.02); border-radius: 20px; margin-bottom: 15px; }
+        .msg { max-width: 70%; padding: 12px 16px; border-radius: 18px; font-size: 14px; position: relative; }
+        .msg.sent { align-self: flex-end; background: var(--primary); color: white; border-bottom-right-radius: 4px; }
+        .msg.received { align-self: flex-start; background: var(--card); border-bottom-left-radius: 4px; border: 1px solid var(--border); }
+
+        /* ПОИСК И ДРУЗЬЯ */
+        .user-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border); }
+        .user-row:last-child { border: none; }
+
         .hidden { display: none !important; }
-        .flex { display: flex; gap: 10px; }
-        textarea, input { 
-            width: 100%; padding: 12px; border-radius: 12px; border: 1px solid var(--border);
-            background: var(--bg); color: var(--text); outline: none; margin-bottom: 10px;
-        }
-
-        /* Список друзей/поиска */
-        .user-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; }
-        .user-row-info { display: flex; align-items: center; gap: 10px; cursor: pointer; }
-
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        section { animation: fadeIn 0.3s ease; }
+        input, textarea { width: 100%; padding: 15px; border-radius: 15px; border: 1px solid var(--border); background: var(--bg); color: var(--text); outline: none; font-family: inherit; margin-bottom: 15px; box-sizing: border-box; }
+        
+        /* МОДАЛКИ */
+        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(5px); display: flex; align-items: center; justify-content: center; z-index: 2000; }
     </style>
 </head>
 <body>
 
     <header>
-        <div class="logo" onclick="goHome()">ИТУДА</div>
+        <div class="logo" onclick="showSection('feed')">ИТУДА</div>
         <div class="nav">
-            <i class="fa-solid fa-house active" onclick="showSection('feed', this)"></i>
-            <i class="fa-solid fa-paper-plane" onclick="showSection('dialogs', this)"></i>
-            <i class="fa-solid fa-magnifying-glass" onclick="showSection('search', this)"></i>
-            <i class="fa-solid fa-user" onclick="viewProfile(auth.currentUser.uid)"></i>
+            <i class="fa-solid fa-house" id="n-feed" onclick="showSection('feed')"></i>
+            <i class="fa-solid fa-comment-dots" id="n-chats" onclick="showSection('chats')"></i>
+            <i class="fa-solid fa-magnifying-glass" id="n-search" onclick="showSection('search')"></i>
+            <i class="fa-solid fa-user-circle" id="n-profile" onclick="viewProfile(auth.currentUser.uid)"></i>
             <i class="fa-solid fa-moon" onclick="toggleTheme()"></i>
         </div>
     </header>
@@ -98,65 +76,68 @@
     <div class="container">
         <section id="s-feed">
             <div class="card">
-                <textarea id="p-text" placeholder="Что нового?"></textarea>
-                <div class="flex">
-                    <button class="btn btn-outline" onclick="addPhoto()"><i class="fa-solid fa-image"></i></button>
-                    <button class="btn btn-main" onclick="createPost()">Опубликовать</button>
+                <h3>Создать пост</h3>
+                <textarea id="post-text" placeholder="О чем ты думаешь?"></textarea>
+                <div style="display:flex; justify-content: space-between; align-items: center;">
+                    <button class="btn btn-outline" onclick="addPhoto()"><i class="fa-solid fa-image"></i> Фото</button>
+                    <button class="btn btn-main" onclick="publishPost()">Опубликовать</button>
                 </div>
             </div>
-            <div id="feed-items"></div>
+            <div id="feed-container"></div>
         </section>
 
         <section id="s-search" class="hidden">
-            <input type="text" placeholder="Поиск людей..." oninput="searchUsers(this.value)">
-            <div id="search-results"></div>
+            <div class="card">
+                <h3>Поиск людей</h3>
+                <input type="text" id="search-input" placeholder="Введите имя..." oninput="searchUsers(this.value)">
+                <div id="search-results"></div>
+            </div>
         </section>
 
         <section id="s-profile" class="hidden">
-            <div class="card profile-header">
-                <img id="view-av" class="profile-avatar">
-                <h2 id="view-name"></h2>
-                <p id="view-status" style="opacity:0.6"></p>
-                <div class="stats">
-                    <div><b id="st-posts">0</b><br>Посты</div>
-                    <div><b id="st-friends">0</b><br>Друзья</div>
-                </div>
-                <div id="profile-actions" class="flex"></div>
-            </div>
-            <div id="user-posts"></div>
-        </section>
-
-        <section id="s-chat" class="hidden">
-            <div class="card im-container">
-                <div id="chat-with" style="font-weight:700; border-bottom:1px solid var(--border); padding-bottom:10px">Чат</div>
-                <div class="im-messages" id="im-box"></div>
-                <div class="flex">
-                    <input id="im-input" placeholder="Сообщение..." onkeypress="if(event.key==='Enter') sendDirectMessage()">
-                    <button class="btn btn-main" style="width:auto" onclick="sendDirectMessage()"><i class="fa-solid fa-paper-plane"></i></button>
+            <div class="card" style="text-align:center">
+                <div id="profile-ui">
+                    <img id="p-av" class="avatar" style="width:120px; height:120px; border-radius:40px; margin-bottom:15px">
+                    <h2 id="p-name" style="margin:0"></h2>
+                    <p id="p-status" style="opacity:0.6"></p>
+                    <div id="p-stats" style="display:flex; justify-content:center; gap:30px; margin:20px 0">
+                        <div><b id="c-posts">0</b><br><small>Постов</small></div>
+                        <div><b id="c-friends">0</b><br><small>Друзей</small></div>
+                    </div>
+                    <div id="p-actions" style="display:flex; gap:10px; justify-content:center"></div>
                 </div>
             </div>
+            <div id="p-posts"></div>
         </section>
 
-        <section id="s-dialogs" class="hidden">
-            <h3>Мои диалоги</h3>
-            <div id="dialogs-list"></div>
+        <section id="s-im" class="hidden">
+            <div class="card">
+                <div style="display:flex; align-items:center; gap:15px; margin-bottom:20px">
+                    <i class="fa-solid fa-arrow-left" onclick="showSection('chats')" style="cursor:pointer"></i>
+                    <h3 id="im-name" style="margin:0">Чат</h3>
+                </div>
+                <div class="chat-box" id="im-messages"></div>
+                <div style="display:flex; gap:10px">
+                    <input type="text" id="im-input" placeholder="Ваше сообщение..." onkeypress="if(event.key==='Enter') sendPrivateMsg()">
+                    <button class="btn btn-main" onclick="sendPrivateMsg()"><i class="fa-solid fa-paper-plane"></i></button>
+                </div>
+            </div>
+        </section>
+
+        <section id="s-chats" class="hidden">
+            <div class="card">
+                <h3>Мои диалоги</h3>
+                <div id="chats-list"></div>
+            </div>
         </section>
     </div>
 
-    <div id="modal-edit" class="modal hidden" style="position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:2000; display:flex; align-items:center; justify-content:center;">
-        <div class="card" style="width:320px">
-            <h3>Редактировать</h3>
-            <input id="ed-name" placeholder="Имя">
-            <input id="ed-av" placeholder="Ссылка на аватар">
-            <input id="ed-status" placeholder="Статус">
-            <button class="btn btn-main" onclick="saveMyProfile()">Сохранить</button>
-            <button class="btn btn-outline" style="width:100%; margin-top:5px" onclick="document.getElementById('modal-edit').classList.add('hidden')">Отмена</button>
+    <div id="auth-screen" class="modal hidden">
+        <div class="card" style="text-align:center; width:300px">
+            <h1 style="color:var(--primary); font-family:'Montserrat'">ИТУДА</h1>
+            <p>Добро пожаловать в Nexus</p>
+            <button class="btn btn-main" onclick="login()" style="width:100%">Войти через Google</button>
         </div>
-    </div>
-
-    <div id="auth-screen" style="position:fixed; inset:0; background:var(--bg); z-index:3000; display:flex; flex-direction:column; align-items:center; justify-content:center;">
-        <h1 style="color:var(--accent); font-size:40px">ИТУДА</h1>
-        <button class="btn btn-main" onclick="auth.signInWithPopup(new firebase.auth.GoogleAuthProvider())" style="width:250px">Войти через Google</button>
     </div>
 
     <script>
@@ -172,155 +153,100 @@
         const auth = firebase.auth();
         const db = firebase.firestore();
 
-        const DEF_AV = "https://www.shutterstock.com/image-vector/user-profile-icon-vector-avatar-600nw-2558760599.jpg";
-        let myData = {};
+        const DEFAULT_AV = "https://www.shutterstock.com/image-vector/user-profile-icon-vector-avatar-600nw-2558760599.jpg";
+        let myData = { friends: [] };
+        let currentChatId = "";
         let currentPhoto = "";
-        let chatTarget = "";
 
-        // Смена темы
+        // ТЕМА
         function toggleTheme() {
             document.body.classList.toggle('dark');
             localStorage.setItem('ituda_dark', document.body.classList.contains('dark'));
         }
         if(localStorage.getItem('ituda_dark') === 'true') document.body.classList.add('dark');
 
-        // Роутинг (навигация)
-        function showSection(id, el) {
+        // НАВИГАЦИЯ
+        function showSection(id) {
             document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
+            document.querySelectorAll('.nav i').forEach(n => n.classList.remove('active'));
             document.getElementById('s-' + id).classList.remove('hidden');
-            document.querySelectorAll('.nav i').forEach(i => i.classList.remove('active'));
-            if(el) el.classList.add('active');
-            if(id === 'feed') renderFeed();
-            if(id === 'dialogs') renderDialogs();
+            if(document.getElementById('n-' + id)) document.getElementById('n-' + id).classList.add('active');
+            
+            if(id === 'feed') loadFeed();
+            if(id === 'chats') loadChatsList();
         }
 
-        function goHome() { showSection('feed', document.querySelector('.fa-house')); }
-
-        // Юзеры и Профили
+        // АВТОРИЗАЦИЯ
+        function login() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
+        
         auth.onAuthStateChanged(async user => {
             if(user) {
                 document.getElementById('auth-screen').classList.add('hidden');
-                await syncUser(user);
-                goHome();
+                const doc = await db.collection("users").doc(user.uid).get();
+                if(doc.exists) {
+                    myData = doc.data();
+                } else {
+                    myData = { name: user.displayName, av: "", status: "Привет, я тут!", friends: [] };
+                    await db.collection("users").doc(user.uid).set(myData);
+                }
+                showSection('feed');
             } else {
                 document.getElementById('auth-screen').classList.remove('hidden');
             }
         });
 
-        async function syncUser(u) {
-            const doc = await db.collection("users").doc(u.uid).get();
-            if(!doc.exists) {
-                myData = { name: u.displayName, av: "", status: "Привет, я в Итуде!", friends: [] };
-                await db.collection("users").doc(u.uid).set(myData);
-            } else {
-                myData = doc.data();
-            }
-        }
-
-        async function viewProfile(uid) {
-            showSection('profile', document.querySelector('.fa-user'));
-            const uDoc = await db.collection("users").doc(uid).get();
-            const u = uDoc.data();
-            
-            document.getElementById('view-av').src = u.av || DEF_AV;
-            document.getElementById('view-name').innerText = u.name;
-            document.getElementById('view-status').innerText = u.status;
-            document.getElementById('st-friends').innerText = (u.friends || []).length;
-
-            const acts = document.getElementById('profile-actions');
-            acts.innerHTML = "";
-            
-            if(uid === auth.currentUser.uid) {
-                acts.innerHTML = `<button class="btn btn-main" onclick="editMyProfile()">Редактировать</button>`;
-            } else {
-                const isFriend = myData.friends.includes(uid);
-                acts.innerHTML = `
-                    <button class="btn btn-main" onclick="openChat('${uid}', '${u.name}')">Сообщение</button>
-                    <button class="btn btn-outline" onclick="toggleFriend('${uid}')">${isFriend ? 'Удалить друга' : 'В друзья'}</button>
-                `;
-            }
-
-            renderUserPosts(uid);
-        }
-
-        function editMyProfile() {
-            document.getElementById('ed-name').value = myData.name;
-            document.getElementById('ed-av').value = myData.av;
-            document.getElementById('ed-status').value = myData.status;
-            document.getElementById('modal-edit').classList.remove('hidden');
-        }
-
-        async function saveMyProfile() {
-            const up = {
-                name: document.getElementById('ed-name').value,
-                av: document.getElementById('ed-av').value,
-                status: document.getElementById('ed-status').value
-            };
-            await db.collection("users").doc(auth.currentUser.uid).update(up);
-            myData = {...myData, ...up};
-            document.getElementById('modal-edit').classList.add('hidden');
-            viewProfile(auth.currentUser.uid);
-        }
-
-        async function toggleFriend(uid) {
-            const action = myData.friends.includes(uid) ? 'arrayRemove' : 'arrayUnion';
-            await db.collection("users").doc(auth.currentUser.uid).update({ friends: firebase.firestore.FieldValue[action](uid) });
-            await db.collection("users").doc(uid).update({ friends: firebase.firestore.FieldValue[action](auth.currentUser.uid) });
-            myData.friends = action === 'arrayUnion' ? [...myData.friends, uid] : myData.friends.filter(f => f !== uid);
-            viewProfile(uid);
-        }
-
-        // Посты
+        // ПОСТЫ
         function addPhoto() {
-            const url = prompt("Ссылка на фото:");
-            if(url) currentPhoto = url;
+            const url = prompt("Вставьте прямую ссылку на картинку:");
+            if(url) { currentPhoto = url; alert("Фото прикреплено!"); }
         }
 
-        async function createPost() {
-            const t = document.getElementById('p-text').value;
-            if(!t.trim() && !currentPhoto) return;
+        async function publishPost() {
+            const text = document.getElementById('post-text').value;
+            if(!text.trim() && !currentPhoto) return;
             await db.collection("posts").add({
                 uid: auth.currentUser.uid, author: myData.name, av: myData.av,
-                text: t, img: currentPhoto, likes: [], date: firebase.firestore.FieldValue.serverTimestamp()
+                text: text, img: currentPhoto, likes: [], comments: [],
+                date: firebase.firestore.FieldValue.serverTimestamp()
             });
-            document.getElementById('p-text').value = ""; currentPhoto = "";
-            renderFeed();
+            document.getElementById('post-text').value = ""; currentPhoto = "";
         }
 
-        function renderFeed() {
-            db.collection("posts").orderBy("date", "desc").limit(30).onSnapshot(snap => {
-                const box = document.getElementById('feed-items');
-                box.innerHTML = "";
-                snap.forEach(doc => box.append(createPostEl(doc)));
+        function loadFeed() {
+            db.collection("posts").orderBy("date", "desc").limit(50).onSnapshot(snap => {
+                const container = document.getElementById('feed-container');
+                container.innerHTML = "";
+                snap.forEach(doc => {
+                    const p = doc.data();
+                    container.innerHTML += `
+                        <div class="card">
+                            <div style="display:flex; align-items:center; gap:12px; margin-bottom:15px">
+                                <img src="${p.av || DEFAULT_AV}" class="avatar" onclick="viewProfile('${p.uid}')">
+                                <div><b>${p.author}</b><br><small style="opacity:0.5">${p.date?.toDate().toLocaleString() || ''}</small></div>
+                            </div>
+                            <div style="font-size:16px; line-height:1.5">${p.text}</div>
+                            ${p.img ? `<img src="${p.img}" style="width:100%; border-radius:15px; margin-top:15px">` : ''}
+                            <div style="margin-top:15px; display:flex; gap:20px; opacity:0.7">
+                                <span onclick="likePost('${doc.id}', ${JSON.stringify(p.likes)})" style="cursor:pointer">
+                                    <i class="${p.likes.includes(auth.currentUser.uid)?'fa-solid':'fa-regular'} fa-heart" style="color:#ff4757"></i> ${p.likes.length}
+                                </span>
+                                <span onclick="focusComm('${doc.id}')" style="cursor:pointer"><i class="fa-regular fa-comment"></i> ${p.comments.length}</span>
+                            </div>
+                            <div style="margin-top:15px; border-top:1px solid var(--border); padding-top:10px">
+                                ${p.comments.map(c => `<div style="font-size:13px; margin-bottom:5px"><b>${c.user}:</b> ${c.text}</div>`).join('')}
+                                <input id="in-${doc.id}" placeholder="Ваш комментарий..." style="margin-top:10px" onkeypress="if(event.key==='Enter') sendComm('${doc.id}', this.value)">
+                            </div>
+                        </div>
+                    `;
+                });
             });
         }
 
-        function renderUserPosts(uid) {
-            db.collection("posts").where("uid", "==", uid).get().then(snap => {
-                document.getElementById('st-posts').innerText = snap.size;
-                const box = document.getElementById('user-posts');
-                box.innerHTML = "<h4>Публикации</h4>";
-                snap.forEach(doc => box.append(createPostEl(doc)));
+        async function sendComm(id, val) {
+            if(!val.trim()) return;
+            await db.collection("posts").doc(id).update({
+                comments: firebase.firestore.FieldValue.arrayUnion({ user: myData.name, text: val })
             });
-        }
-
-        function createPostEl(doc) {
-            const p = doc.data();
-            const div = document.createElement('div');
-            div.className = "card";
-            div.innerHTML = `
-                <div class="post-head">
-                    <img src="${p.av || DEF_AV}" class="avatar-sm" onclick="viewProfile('${p.uid}')">
-                    <b>${p.author}</b>
-                </div>
-                <div>${p.text}</div>
-                ${p.img ? `<img src="${p.img}" class="post-img">` : ''}
-                <div style="margin-top:10px; opacity:0.6; font-size:18px">
-                    <i class="fa-heart ${p.likes.includes(auth.currentUser.uid) ? 'fa-solid' : 'fa-regular'}" 
-                       onclick="likePost('${doc.id}', ${JSON.stringify(p.likes)})" style="cursor:pointer; color:${p.likes.includes(auth.currentUser.uid) ? '#ff4757' : 'inherit'}"></i> ${p.likes.length}
-                </div>
-            `;
-            return div;
         }
 
         async function likePost(id, likes) {
@@ -328,87 +254,127 @@
             await db.collection("posts").doc(id).update({ likes: firebase.firestore.FieldValue[act](auth.currentUser.uid) });
         }
 
-        // Поиск
-        async function searchUsers(q) {
-            if(!q.trim()) return;
+        // ПРОФИЛИ И ДРУЗЬЯ
+        async function viewProfile(uid) {
+            showSection('profile');
+            const uDoc = await db.collection("users").doc(uid).get();
+            const u = uDoc.data();
+            
+            document.getElementById('p-av').src = u.av || DEFAULT_AV;
+            document.getElementById('p-name').innerText = u.name;
+            document.getElementById('p-status').innerText = u.status;
+            document.getElementById('c-friends').innerText = (u.friends || []).length;
+            
+            const actions = document.getElementById('p-actions');
+            actions.innerHTML = "";
+            
+            if(uid !== auth.currentUser.uid) {
+                const isFriend = myData.friends.includes(uid);
+                actions.innerHTML = `
+                    <button class="btn btn-main" onclick="openIM('${uid}', '${u.name}')">Написать ЛС</button>
+                    <button class="btn btn-outline" onclick="toggleFriend('${uid}')">${isFriend ? 'Удалить' : 'Добавить в друзья'}</button>
+                `;
+            } else {
+                actions.innerHTML = `<button class="btn btn-outline" onclick="editProfile()">Настройки</button>`;
+            }
+
+            // Посты юзера
+            const pSnap = await db.collection("posts").where("uid", "==", uid).get();
+            document.getElementById('c-posts').innerText = pSnap.size;
+            const pBox = document.getElementById('p-posts');
+            pBox.innerHTML = "";
+            pSnap.forEach(d => {
+                const p = d.data();
+                pBox.innerHTML += `<div class="card">${p.text}</div>`;
+            });
+        }
+
+        async function toggleFriend(uid) {
+            const isFriend = myData.friends.includes(uid);
+            const act = isFriend ? 'arrayRemove' : 'arrayUnion';
+            await db.collection("users").doc(auth.currentUser.uid).update({ friends: firebase.firestore.FieldValue[act](uid) });
+            await db.collection("users").doc(uid).update({ friends: firebase.firestore.FieldValue[act](auth.currentUser.uid) });
+            myData.friends = isFriend ? myData.friends.filter(f => f !== uid) : [...myData.friends, uid];
+            viewProfile(uid);
+        }
+
+        // ЛИЧНЫЕ СООБЩЕНИЯ
+        function openIM(uid, name) {
+            currentChatId = uid;
+            document.getElementById('im-name').innerText = name;
+            showSection('im');
+            loadMessages();
+        }
+
+        async function sendPrivateMsg() {
+            const input = document.getElementById('im-input');
+            if(!input.value.trim()) return;
+            await db.collection("messages").add({
+                from: auth.currentUser.uid, to: currentChatId,
+                text: input.value, date: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            input.value = "";
+        }
+
+        function loadMessages() {
+            db.collection("messages").orderBy("date", "asc").onSnapshot(snap => {
+                const box = document.getElementById('im-messages');
+                box.innerHTML = "";
+                snap.forEach(doc => {
+                    const m = doc.data();
+                    if((m.from === auth.currentUser.uid && m.to === currentChatId) || (m.from === currentChatId && m.to === auth.currentUser.uid)) {
+                        box.innerHTML += `<div class="msg ${m.from === auth.currentUser.uid ? 'sent' : 'received'}">${m.text}</div>`;
+                    }
+                });
+                box.scrollTop = box.scrollHeight;
+            });
+        }
+
+        async function loadChatsList() {
             const snap = await db.collection("users").get();
-            const res = document.getElementById('search-results');
-            res.innerHTML = "";
+            const list = document.getElementById('chats-list');
+            list.innerHTML = "";
             snap.forEach(doc => {
-                const u = doc.data();
-                if(u.name.toLowerCase().includes(q.toLowerCase())) {
-                    res.innerHTML += `
-                        <div class="card user-row">
-                            <div class="user-row-info" onclick="viewProfile('${doc.id}')">
-                                <img src="${u.av || DEF_AV}" class="avatar-sm">
+                if(doc.id !== auth.currentUser.uid) {
+                    const u = doc.data();
+                    list.innerHTML += `
+                        <div class="user-row" onclick="openIM('${doc.id}', '${u.name}')">
+                            <div style="display:flex; align-items:center; gap:10px">
+                                <img src="${u.av || DEFAULT_AV}" class="avatar" style="width:35px; height:35px">
                                 <b>${u.name}</b>
                             </div>
-                            <button class="btn btn-outline" onclick="viewProfile('${doc.id}')">Профиль</button>
+                            <i class="fa-solid fa-chevron-right"></i>
                         </div>
                     `;
                 }
             });
         }
 
-        // ЛИЧНЫЕ СООБЩЕНИЯ
-        function openChat(uid, name) {
-            chatTarget = uid;
-            document.getElementById('chat-with').innerText = "Чат с " + name;
-            showSection('chat');
-            loadMessages();
-        }
-
-        async function sendDirectMessage() {
-            const input = document.getElementById('im-input');
-            if(!input.value.trim() || !chatTarget) return;
-            const msg = {
-                from: auth.currentUser.uid,
-                to: chatTarget,
-                text: input.value,
-                date: firebase.firestore.FieldValue.serverTimestamp()
-            };
-            await db.collection("messages").add(msg);
-            input.value = "";
-        }
-
-        function loadMessages() {
-            db.collection("messages")
-              .where("from", "in", [auth.currentUser.uid, chatTarget])
-              .orderBy("date", "asc")
-              .onSnapshot(snap => {
-                  const box = document.getElementById('im-box');
-                  box.innerHTML = "";
-                  snap.forEach(doc => {
-                      const m = doc.data();
-                      if((m.from === auth.currentUser.uid && m.to === chatTarget) || (m.from === chatTarget && m.to === auth.currentUser.uid)) {
-                          const div = document.createElement('div');
-                          div.className = `bubble ${m.from === auth.currentUser.uid ? 'sent' : 'received'}`;
-                          div.innerText = m.text;
-                          box.appendChild(div);
-                      }
-                  });
-                  box.scrollTop = box.scrollHeight;
-              });
-        }
-
-        async function renderDialogs() {
-            const snap = await db.collection("messages").where("to", "==", auth.currentUser.uid).get();
-            const list = document.getElementById('dialogs-list');
-            list.innerHTML = "";
-            let uniqueUsers = [...new Set(snap.docs.map(d => d.data().from))];
-            
-            for(let uid of uniqueUsers) {
-                const uDoc = await db.collection("users").doc(uid).get();
-                const u = uDoc.data();
-                list.innerHTML += `
-                    <div class="card user-row" onclick="openChat('${uid}', '${u.name}')">
-                        <div class="user-row-info">
-                            <img src="${u.av || DEF_AV}" class="avatar-sm">
-                            <b>${u.name}</b>
+        async function searchUsers(val) {
+            if(!val.trim()) return;
+            const snap = await db.collection("users").get();
+            const res = document.getElementById('search-results');
+            res.innerHTML = "";
+            snap.forEach(doc => {
+                const u = doc.data();
+                if(u.name.toLowerCase().includes(val.toLowerCase())) {
+                    res.innerHTML += `
+                        <div class="user-row">
+                            <div onclick="viewProfile('${doc.id}')" style="cursor:pointer"><b>${u.name}</b></div>
+                            <button class="btn btn-outline" style="padding:5px 10px" onclick="viewProfile('${doc.id}')">Профиль</button>
                         </div>
-                        <i class="fa-solid fa-chevron-right"></i>
-                    </div>
-                `;
+                    `;
+                }
+            });
+        }
+
+        function editProfile() {
+            const n = prompt("Новое имя:", myData.name);
+            const a = prompt("Ссылка на новый аватар:", myData.av);
+            const s = prompt("Новый статус:", myData.status);
+            if(n) {
+                db.collection("users").doc(auth.currentUser.uid).update({ name: n, av: a, status: s });
+                location.reload();
             }
         }
     </script>
