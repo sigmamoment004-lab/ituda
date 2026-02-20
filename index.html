@@ -3,174 +3,163 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ИТУДА SUPER ULTRA 3.0</title>
+    <title>ИТУДА NEXUS</title>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore-compat.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #6c5ce7; --primary-light: #a29bfe; --bg: #f0f2f5; --text: #2d3436;
-            --card: #ffffff; --border: rgba(0,0,0,0.08); --shadow: 0 10px 30px rgba(108, 92, 231, 0.1);
-            --glass: rgba(255, 255, 255, 0.8);
+            --accent: #6c5ce7; --bg: #f3f5f9; --text: #2d3436;
+            --card: #ffffff; --border: rgba(0,0,0,0.06);
+            --shadow: 0 8px 30px rgba(0,0,0,0.04);
         }
         body.dark {
-            --bg: #0b0e14; --text: #e4e6eb; --card: #1c1e21; --border: rgba(255,255,255,0.1);
-            --shadow: 0 10px 30px rgba(0,0,0,0.5); --glass: rgba(28, 30, 33, 0.8);
+            --bg: #0d1117; --text: #c9d1d9; --card: #161b22; --border: rgba(255,255,255,0.1);
         }
+        * { box-sizing: border-box; transition: background 0.2s, color 0.2s; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; overflow-x: hidden; }
 
-        * { box-sizing: border-box; scrollbar-width: thin; scrollbar-color: var(--primary) transparent; }
-        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; transition: all 0.3s ease; overflow-x: hidden; }
-
-        /* Кастомный скроллбар */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 10px; }
-
+        /* Шапка */
         header { 
-            backdrop-filter: blur(15px); background: var(--glass); border-bottom: 1px solid var(--border);
-            padding: 0 5%; height: 70px; display: flex; justify-content: space-between; align-items: center; 
-            position: sticky; top: 0; z-index: 1000; box-shadow: var(--shadow);
+            position: sticky; top: 0; z-index: 1000; background: var(--card); 
+            border-bottom: 1px solid var(--border); padding: 10px 5%; 
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .logo { font-weight: 800; font-size: 24px; color: var(--accent); cursor: pointer; }
+
+        /* Навигация */
+        .nav { display: flex; gap: 20px; font-size: 20px; }
+        .nav i { cursor: pointer; opacity: 0.5; }
+        .nav i.active { opacity: 1; color: var(--accent); }
+
+        .container { max-width: 600px; margin: 20px auto; padding-bottom: 100px; }
+
+        /* Карточки */
+        .card { 
+            background: var(--card); border-radius: 20px; border: 1px solid var(--border);
+            padding: 20px; margin-bottom: 20px; box-shadow: var(--shadow);
         }
 
-        .logo { font-family: 'Montserrat', sans-serif; font-weight: 900; font-size: 28px; color: var(--primary); letter-spacing: -1.5px; cursor: pointer; }
-        
-        .nav-menu { display: flex; gap: 25px; align-items: center; }
-        .nav-item { cursor: pointer; font-size: 20px; opacity: 0.6; transition: 0.3s; position: relative; }
-        .nav-item.active { opacity: 1; color: var(--primary); }
-        .nav-item:hover { transform: translateY(-2px); opacity: 1; }
+        /* Профиль */
+        .profile-header { text-align: center; padding: 20px; }
+        .profile-avatar { width: 100px; height: 100px; border-radius: 30px; object-fit: cover; margin-bottom: 15px; border: 3px solid var(--accent); }
+        .stats { display: flex; justify-content: space-around; margin: 20px 0; font-size: 14px; }
 
-        .container { max-width: 700px; margin: 30px auto; padding: 0 15px; min-height: 100vh; }
-
-        /* Создание поста */
-        .glass-panel { 
-            background: var(--card); border-radius: 25px; padding: 25px; border: 1px solid var(--border);
-            box-shadow: var(--shadow); margin-bottom: 30px; transition: 0.3s;
-        }
-        .glass-panel:hover { border-color: var(--primary-light); }
-        
-        textarea { 
-            width: 100%; border: none; background: transparent; color: var(--text); font-size: 18px; 
-            resize: none; outline: none; font-family: inherit; margin-bottom: 15px; min-height: 100px;
-        }
+        /* Сообщения (ЛС) */
+        .im-container { height: 70vh; display: flex; flex-direction: column; }
+        .im-messages { flex: 1; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 10px; }
+        .bubble { max-width: 80%; padding: 10px 15px; border-radius: 15px; font-size: 14px; }
+        .bubble.sent { align-self: flex-end; background: var(--accent); color: white; }
+        .bubble.received { align-self: flex-start; background: var(--border); }
 
         /* Посты */
-        .post { 
-            background: var(--card); border-radius: 30px; padding: 25px; margin-bottom: 30px; 
-            border: 1px solid var(--border); box-shadow: var(--shadow); animation: slideUp 0.5s ease;
-        }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-
-        .post-header { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; position: relative; }
-        .avatar { width: 55px; height: 55px; border-radius: 20px; object-fit: cover; box-shadow: 0 5px 15px rgba(0,0,0,0.1); border: 2px solid var(--card); }
-        .user-info b { font-size: 17px; display: flex; align-items: center; gap: 5px; }
-        .verify-badge { color: #00d2ff; font-size: 14px; }
-        .user-info span { font-size: 12px; opacity: 0.5; font-weight: 400; }
-
-        .post-content { font-size: 17px; line-height: 1.6; white-space: pre-wrap; }
-        .post-img { width: 100%; border-radius: 20px; margin: 15px 0; max-height: 550px; object-fit: cover; cursor: zoom-in; }
-        
-        .actions { display: flex; gap: 25px; border-top: 1px solid var(--border); padding-top: 20px; margin-top: 20px; }
-        .btn-act { background: none; border: none; color: var(--text); cursor: pointer; font-size: 16px; opacity: 0.6; display: flex; align-items: center; gap: 8px; transition: 0.3s; padding: 8px 15px; border-radius: 12px; }
-        .btn-act:hover { background: rgba(108, 92, 231, 0.1); opacity: 1; color: var(--primary); }
-        .btn-act.liked { color: #ff4757; opacity: 1; }
-
-        /* Чат */
-        .chat-container { height: 70vh; display: flex; flex-direction: column; }
-        .chat-messages { flex-grow: 1; overflow-y: auto; padding-right: 10px; margin-bottom: 20px; }
-        .msg { margin-bottom: 15px; display: flex; flex-direction: column; max-width: 80%; }
-        .msg.me { align-self: flex-end; align-items: flex-end; }
-        .msg-bubble { background: var(--card); padding: 12px 18px; border-radius: 18px; border: 1px solid var(--border); box-shadow: var(--shadow); position: relative; }
-        .me .msg-bubble { background: var(--primary); color: white; border: none; }
-        .msg-info { font-size: 10px; opacity: 0.5; margin-bottom: 4px; }
-
-        /* Поиск */
-        .search-bar { width: 100%; padding: 15px 25px; border-radius: 20px; border: 1px solid var(--border); background: var(--card); color: var(--text); font-size: 16px; margin-bottom: 20px; outline: none; }
-        .user-item { display: flex; align-items: center; gap: 15px; background: var(--card); padding: 15px; border-radius: 20px; margin-bottom: 10px; border: 1px solid var(--border); transition: 0.3s; cursor: pointer; }
-        .user-item:hover { transform: scale(1.02); border-color: var(--primary); }
+        .post-head { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+        .avatar-sm { width: 40px; height: 40px; border-radius: 12px; cursor: pointer; }
+        .post-img { width: 100%; border-radius: 15px; margin-top: 10px; }
 
         /* Кнопки */
-        .btn-p { background: var(--primary); color: white; border: none; padding: 14px 28px; border-radius: 18px; cursor: pointer; font-weight: 700; font-family: 'Montserrat'; transition: 0.3s; box-shadow: 0 4px 15px rgba(108, 92, 231, 0.3); }
-        .btn-p:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(108, 92, 231, 0.4); filter: brightness(1.1); }
-        .btn-p:active { transform: scale(0.98); }
-
-        .hidden { display: none !important; }
-        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 2000; animation: fadeIn 0.3s; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        .modal-box { background: var(--card); padding: 40px; border-radius: 35px; width: 400px; text-align: center; border: 1px solid var(--border); }
+        .btn { 
+            border: none; padding: 10px 20px; border-radius: 12px; cursor: pointer; 
+            font-weight: 600; font-family: inherit; transition: 0.2s;
+        }
+        .btn-main { background: var(--accent); color: white; width: 100%; }
+        .btn-outline { background: transparent; border: 1px solid var(--accent); color: var(--accent); }
         
-        .input-style { width: 100%; padding: 15px; border-radius: 15px; border: 1px solid var(--border); background: var(--bg); color: var(--text); margin-bottom: 15px; outline: none; transition: 0.3s; }
-        .input-style:focus { border-color: var(--primary); }
+        .hidden { display: none !important; }
+        .flex { display: flex; gap: 10px; }
+        textarea, input { 
+            width: 100%; padding: 12px; border-radius: 12px; border: 1px solid var(--border);
+            background: var(--bg); color: var(--text); outline: none; margin-bottom: 10px;
+        }
 
-        .status-badge { font-size: 12px; padding: 4px 10px; background: var(--primary-light); color: white; border-radius: 20px; display: inline-block; margin-top: 5px; }
+        /* Список друзей/поиска */
+        .user-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; }
+        .user-row-info { display: flex; align-items: center; gap: 10px; cursor: pointer; }
 
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        section { animation: fadeIn 0.3s ease; }
     </style>
 </head>
 <body>
 
     <header>
-        <div class="logo" onclick="showSection('feed')">ИТУДА</div>
-        <div class="nav-menu">
-            <i class="fa-solid fa-house nav-item active" id="nav-feed" onclick="showSection('feed')"></i>
-            <i class="fa-solid fa-message nav-item" id="nav-chat" onclick="showSection('chat')"></i>
-            <i class="fa-solid fa-magnifying-glass nav-item" id="nav-search" onclick="showSection('search')"></i>
-            <i class="fa-solid fa-user-astronaut nav-item" onclick="openProfile()"></i>
-            <i class="fa-solid fa-moon nav-item" onclick="toggleTheme()"></i>
+        <div class="logo" onclick="goHome()">ИТУДА</div>
+        <div class="nav">
+            <i class="fa-solid fa-house active" onclick="showSection('feed', this)"></i>
+            <i class="fa-solid fa-paper-plane" onclick="showSection('dialogs', this)"></i>
+            <i class="fa-solid fa-magnifying-glass" onclick="showSection('search', this)"></i>
+            <i class="fa-solid fa-user" onclick="viewProfile(auth.currentUser.uid)"></i>
+            <i class="fa-solid fa-moon" onclick="toggleTheme()"></i>
         </div>
     </header>
 
     <div class="container">
-        <section id="sec-feed">
-            <div class="glass-panel">
-                <textarea id="post-text" placeholder="Что происходит в твоем мире?"></textarea>
-                <div id="img-indicator" style="font-size:11px; color:var(--primary); margin-bottom:15px; font-weight:bold;"></div>
-                <div style="display:flex; justify-content: space-between; align-items: center;">
-                    <button class="btn-act" onclick="addImg()"><i class="fa-solid fa-camera"></i> Фото (ссылка)</button>
-                    <button class="btn-p" onclick="sendPost()">Запостить</button>
+        <section id="s-feed">
+            <div class="card">
+                <textarea id="p-text" placeholder="Что нового?"></textarea>
+                <div class="flex">
+                    <button class="btn btn-outline" onclick="addPhoto()"><i class="fa-solid fa-image"></i></button>
+                    <button class="btn btn-main" onclick="createPost()">Опубликовать</button>
                 </div>
             </div>
-            <div id="feed-list"></div>
+            <div id="feed-items"></div>
         </section>
 
-        <section id="sec-chat" class="hidden">
-            <div class="glass-panel chat-container">
-                <h3 style="margin-top:0">Глобальный чат</h3>
-                <div class="chat-messages" id="chat-messages"></div>
-                <div style="display:flex; gap:10px">
-                    <input id="chat-input" class="input-style" style="margin-bottom:0" placeholder="Напиши что-нибудь..." onkeypress="if(event.key==='Enter') sendChat()">
-                    <button class="btn-p" style="width:auto" onclick="sendChat()"><i class="fa-solid fa-paper-plane"></i></button>
+        <section id="s-search" class="hidden">
+            <input type="text" placeholder="Поиск людей..." oninput="searchUsers(this.value)">
+            <div id="search-results"></div>
+        </section>
+
+        <section id="s-profile" class="hidden">
+            <div class="card profile-header">
+                <img id="view-av" class="profile-avatar">
+                <h2 id="view-name"></h2>
+                <p id="view-status" style="opacity:0.6"></p>
+                <div class="stats">
+                    <div><b id="st-posts">0</b><br>Посты</div>
+                    <div><b id="st-friends">0</b><br>Друзья</div>
+                </div>
+                <div id="profile-actions" class="flex"></div>
+            </div>
+            <div id="user-posts"></div>
+        </section>
+
+        <section id="s-chat" class="hidden">
+            <div class="card im-container">
+                <div id="chat-with" style="font-weight:700; border-bottom:1px solid var(--border); padding-bottom:10px">Чат</div>
+                <div class="im-messages" id="im-box"></div>
+                <div class="flex">
+                    <input id="im-input" placeholder="Сообщение..." onkeypress="if(event.key==='Enter') sendDirectMessage()">
+                    <button class="btn btn-main" style="width:auto" onclick="sendDirectMessage()"><i class="fa-solid fa-paper-plane"></i></button>
                 </div>
             </div>
         </section>
 
-        <section id="sec-search" class="hidden">
-            <input type="text" class="search-bar" id="search-input" placeholder="Найти сигму по имени..." oninput="searchUsers()">
-            <div id="user-results"></div>
+        <section id="s-dialogs" class="hidden">
+            <h3>Мои диалоги</h3>
+            <div id="dialogs-list"></div>
         </section>
     </div>
 
-    <div id="modal-profile" class="modal hidden">
-        <div class="modal-box">
-            <h2>Настройки</h2>
-            <input id="u-name" class="input-style" placeholder="Твоё имя">
-            <input id="u-avatar" class="input-style" placeholder="Ссылка на аватарку">
-            <input id="u-status" class="input-style" placeholder="Твой статус (учусь, гуляю...)">
-            <button class="btn-p" onclick="saveProfile()">Обновить всё</button>
-            <p style="margin-top:20px; cursor:pointer; opacity:0.5" onclick="closeModal()">Закрыть</p>
-            <button onclick="auth.signOut()" style="background:none; border:none; color:#ff4757; margin-top:20px; cursor:pointer">Выйти из аккаунта</button>
+    <div id="modal-edit" class="modal hidden" style="position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:2000; display:flex; align-items:center; justify-content:center;">
+        <div class="card" style="width:320px">
+            <h3>Редактировать</h3>
+            <input id="ed-name" placeholder="Имя">
+            <input id="ed-av" placeholder="Ссылка на аватар">
+            <input id="ed-status" placeholder="Статус">
+            <button class="btn btn-main" onclick="saveMyProfile()">Сохранить</button>
+            <button class="btn btn-outline" style="width:100%; margin-top:5px" onclick="document.getElementById('modal-edit').classList.add('hidden')">Отмена</button>
         </div>
     </div>
 
-    <div id="auth-screen" class="modal">
-        <div class="modal-box">
-            <h1 style="font-family:'Montserrat'; font-weight:900; color:var(--primary); font-size:40px">ИТУДА 3.0</h1>
-            <p style="margin-bottom:30px; opacity:0.7">Новая эра твоих мыслей</p>
-            <button class="btn-p" onclick="login()" style="background:#4285F4; width:100%"><i class="fa-brands fa-google"></i> Войти через Google</button>
-        </div>
+    <div id="auth-screen" style="position:fixed; inset:0; background:var(--bg); z-index:3000; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+        <h1 style="color:var(--accent); font-size:40px">ИТУДА</h1>
+        <button class="btn btn-main" onclick="auth.signInWithPopup(new firebase.auth.GoogleAuthProvider())" style="width:250px">Войти через Google</button>
     </div>
 
     <script>
-        // Конфиг Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyDm6_A5tpKNQBs9B2GgpZugFSzEw2uZuoU",
             authDomain: "ituda-a4fb2.firebaseapp.com",
@@ -183,194 +172,244 @@
         const auth = firebase.auth();
         const db = firebase.firestore();
 
-        const DEFAULT_AVATAR = "https://www.shutterstock.com/image-vector/user-profile-icon-vector-avatar-600nw-2558760599.jpg";
-        let currentImg = "";
-        let userData = { name: "", avatar: "", status: "", isVerified: false };
+        const DEF_AV = "https://www.shutterstock.com/image-vector/user-profile-icon-vector-avatar-600nw-2558760599.jpg";
+        let myData = {};
+        let currentPhoto = "";
+        let chatTarget = "";
 
-        // Инициализация темы
-        if(localStorage.getItem('ituda_dark') === 'true') document.body.classList.add('dark');
+        // Смена темы
         function toggleTheme() {
             document.body.classList.toggle('dark');
             localStorage.setItem('ituda_dark', document.body.classList.contains('dark'));
         }
+        if(localStorage.getItem('ituda_dark') === 'true') document.body.classList.add('dark');
 
-        // Переключение секций
-        function showSection(name) {
+        // Роутинг (навигация)
+        function showSection(id, el) {
             document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
-            document.getElementById(`sec-${name}`).classList.remove('hidden');
-            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-            document.getElementById(`nav-${name}`).classList.add('active');
-            if(name === 'chat') { scrollChat(); loadChat(); }
-            if(name === 'feed') renderFeed();
+            document.getElementById('s-' + id).classList.remove('hidden');
+            document.querySelectorAll('.nav i').forEach(i => i.classList.remove('active'));
+            if(el) el.classList.add('active');
+            if(id === 'feed') renderFeed();
+            if(id === 'dialogs') renderDialogs();
         }
 
-        // Авторизация
-        function login() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
+        function goHome() { showSection('feed', document.querySelector('.fa-house')); }
+
+        // Юзеры и Профили
         auth.onAuthStateChanged(async user => {
             if(user) {
                 document.getElementById('auth-screen').classList.add('hidden');
-                await loadUserData(user.uid);
-                showSection('feed');
+                await syncUser(user);
+                goHome();
             } else {
                 document.getElementById('auth-screen').classList.remove('hidden');
             }
         });
 
-        async function loadUserData(uid) {
-            const doc = await db.collection("users").doc(uid).get();
-            if(doc.exists) {
-                userData = doc.data();
+        async function syncUser(u) {
+            const doc = await db.collection("users").doc(u.uid).get();
+            if(!doc.exists) {
+                myData = { name: u.displayName, av: "", status: "Привет, я в Итуде!", friends: [] };
+                await db.collection("users").doc(u.uid).set(myData);
             } else {
-                userData = { name: auth.currentUser.displayName, avatar: "", status: "Новичок", isVerified: false };
-                await db.collection("users").doc(uid).set(userData);
+                myData = doc.data();
             }
         }
 
-        function openProfile() {
-            document.getElementById('u-name').value = userData.name;
-            document.getElementById('u-avatar').value = userData.avatar;
-            document.getElementById('u-status').value = userData.status || "";
-            document.getElementById('modal-profile').classList.remove('hidden');
+        async function viewProfile(uid) {
+            showSection('profile', document.querySelector('.fa-user'));
+            const uDoc = await db.collection("users").doc(uid).get();
+            const u = uDoc.data();
+            
+            document.getElementById('view-av').src = u.av || DEF_AV;
+            document.getElementById('view-name').innerText = u.name;
+            document.getElementById('view-status').innerText = u.status;
+            document.getElementById('st-friends').innerText = (u.friends || []).length;
+
+            const acts = document.getElementById('profile-actions');
+            acts.innerHTML = "";
+            
+            if(uid === auth.currentUser.uid) {
+                acts.innerHTML = `<button class="btn btn-main" onclick="editMyProfile()">Редактировать</button>`;
+            } else {
+                const isFriend = myData.friends.includes(uid);
+                acts.innerHTML = `
+                    <button class="btn btn-main" onclick="openChat('${uid}', '${u.name}')">Сообщение</button>
+                    <button class="btn btn-outline" onclick="toggleFriend('${uid}')">${isFriend ? 'Удалить друга' : 'В друзья'}</button>
+                `;
+            }
+
+            renderUserPosts(uid);
         }
 
-        async function saveProfile() {
-            userData.name = document.getElementById('u-name').value;
-            userData.avatar = document.getElementById('u-avatar').value;
-            userData.status = document.getElementById('u-status').value;
-            await db.collection("users").doc(auth.currentUser.uid).update(userData);
-            closeModal();
-            renderFeed();
+        function editMyProfile() {
+            document.getElementById('ed-name').value = myData.name;
+            document.getElementById('ed-av').value = myData.av;
+            document.getElementById('ed-status').value = myData.status;
+            document.getElementById('modal-edit').classList.remove('hidden');
         }
 
-        function closeModal() { document.querySelectorAll('.modal').forEach(m => m.classList.add('hidden')); }
+        async function saveMyProfile() {
+            const up = {
+                name: document.getElementById('ed-name').value,
+                av: document.getElementById('ed-av').value,
+                status: document.getElementById('ed-status').value
+            };
+            await db.collection("users").doc(auth.currentUser.uid).update(up);
+            myData = {...myData, ...up};
+            document.getElementById('modal-edit').classList.add('hidden');
+            viewProfile(auth.currentUser.uid);
+        }
 
-        function addImg() {
-            const url = prompt("Прямая ссылка на фото (.jpg, .png, .gif):");
-            if(url) { currentImg = url; document.getElementById('img-indicator').innerText = "✅ ФОТО ГОТОВО К ПУБЛИКАЦИИ"; }
+        async function toggleFriend(uid) {
+            const action = myData.friends.includes(uid) ? 'arrayRemove' : 'arrayUnion';
+            await db.collection("users").doc(auth.currentUser.uid).update({ friends: firebase.firestore.FieldValue[action](uid) });
+            await db.collection("users").doc(uid).update({ friends: firebase.firestore.FieldValue[action](auth.currentUser.uid) });
+            myData.friends = action === 'arrayUnion' ? [...myData.friends, uid] : myData.friends.filter(f => f !== uid);
+            viewProfile(uid);
         }
 
         // Посты
-        async function sendPost() {
-            const txt = document.getElementById('post-text').value;
-            if(!txt.trim() && !currentImg) return;
+        function addPhoto() {
+            const url = prompt("Ссылка на фото:");
+            if(url) currentPhoto = url;
+        }
+
+        async function createPost() {
+            const t = document.getElementById('p-text').value;
+            if(!t.trim() && !currentPhoto) return;
             await db.collection("posts").add({
-                text: txt, img: currentImg, uid: auth.currentUser.uid,
-                author: userData.name, avatar: userData.avatar,
-                isVerified: userData.isVerified || false,
-                likes: [], comments: [], date: firebase.firestore.FieldValue.serverTimestamp()
+                uid: auth.currentUser.uid, author: myData.name, av: myData.av,
+                text: t, img: currentPhoto, likes: [], date: firebase.firestore.FieldValue.serverTimestamp()
             });
-            document.getElementById('post-text').value = ""; currentImg = "";
-            document.getElementById('img-indicator').innerText = "";
+            document.getElementById('p-text').value = ""; currentPhoto = "";
+            renderFeed();
         }
 
         function renderFeed() {
-            db.collection("posts").orderBy("date", "desc").limit(50).onSnapshot(snap => {
-                const list = document.getElementById('feed-list');
-                list.innerHTML = "";
-                snap.forEach(doc => {
-                    const p = doc.data();
-                    const id = doc.id;
-                    const av = p.avatar || DEFAULT_AVATAR;
-                    const liked = p.likes.includes(auth.currentUser.uid);
-                    
-                    list.innerHTML += `
-                        <div class="post">
-                            <div class="post-header">
-                                <img src="${av}" class="avatar">
-                                <div class="user-info">
-                                    <b>${p.author} ${p.isVerified ? '<i class="fa-solid fa-circle-check verify-badge"></i>' : ''}</b>
-                                    <span>${p.date?.toDate().toLocaleString() || 'только что'}</span>
-                                </div>
-                                ${p.uid === auth.currentUser.uid ? `<i class="fa-solid fa-ellipsis-h" style="margin-left:auto; cursor:pointer" onclick="deletePost('${id}')"></i>` : ''}
-                            </div>
-                            <div class="post-content">${p.text}</div>
-                            ${p.img ? `<img src="${p.img}" class="post-img" onclick="window.open('${p.img}')">` : ''}
-                            <div class="actions">
-                                <button class="btn-act ${liked ? 'liked' : ''}" onclick="like('${id}', ${JSON.stringify(p.likes)})">
-                                    <i class="fa-${liked ? 'solid' : 'regular'} fa-heart"></i> ${p.likes.length}
-                                </button>
-                                <button class="btn-act" onclick="toggleComm('${id}')"><i class="fa-regular fa-comment"></i> ${p.comments.length}</button>
-                            </div>
-                            <div id="c-box-${id}" class="hidden">
-                                <div class="comments">${p.comments.map(c => `<div class="comment"><b>${c.user}:</b> ${c.text}</div>`).join('')}</div>
-                                <input class="comm-input" placeholder="Ваш комментарий..." onkeypress="if(event.key==='Enter') addComm('${id}', this.value)">
-                            </div>
-                        </div>
-                    `;
-                });
-            });
-        }
-
-        async function like(id, likes) {
-            const uid = auth.currentUser.uid;
-            const act = likes.includes(uid) ? 'arrayRemove' : 'arrayUnion';
-            await db.collection("posts").doc(id).update({ likes: firebase.firestore.FieldValue[act](uid) });
-        }
-
-        async function addComm(id, text) {
-            if(!text.trim()) return;
-            await db.collection("posts").doc(id).update({
-                comments: firebase.firestore.FieldValue.arrayUnion({ user: userData.name, text: text })
-            });
-        }
-
-        async function deletePost(id) { if(confirm("Удалить этот шедевр?")) await db.collection("posts").doc(id).delete(); }
-        function toggleComm(id) { document.getElementById(`c-box-${id}`).classList.toggle('hidden'); }
-
-        // Чат
-        async function sendChat() {
-            const input = document.getElementById('chat-input');
-            if(!input.value.trim()) return;
-            await db.collection("chat").add({
-                uid: auth.currentUser.uid,
-                user: userData.name,
-                text: input.value,
-                date: firebase.firestore.FieldValue.serverTimestamp()
-            });
-            input.value = "";
-        }
-
-        function loadChat() {
-            db.collection("chat").orderBy("date", "asc").limitToLast(40).onSnapshot(snap => {
-                const box = document.getElementById('chat-messages');
+            db.collection("posts").orderBy("date", "desc").limit(30).onSnapshot(snap => {
+                const box = document.getElementById('feed-items');
                 box.innerHTML = "";
-                snap.forEach(doc => {
-                    const m = doc.data();
-                    const isMe = m.uid === auth.currentUser.uid;
-                    box.innerHTML += `
-                        <div class="msg ${isMe ? 'me' : ''}">
-                            <div class="msg-info">${m.user}</div>
-                            <div class="msg-bubble">${m.text}</div>
-                        </div>
-                    `;
-                });
-                scrollChat();
+                snap.forEach(doc => box.append(createPostEl(doc)));
             });
         }
-        function scrollChat() { const b = document.getElementById('chat-messages'); b.scrollTop = b.scrollHeight; }
+
+        function renderUserPosts(uid) {
+            db.collection("posts").where("uid", "==", uid).get().then(snap => {
+                document.getElementById('st-posts').innerText = snap.size;
+                const box = document.getElementById('user-posts');
+                box.innerHTML = "<h4>Публикации</h4>";
+                snap.forEach(doc => box.append(createPostEl(doc)));
+            });
+        }
+
+        function createPostEl(doc) {
+            const p = doc.data();
+            const div = document.createElement('div');
+            div.className = "card";
+            div.innerHTML = `
+                <div class="post-head">
+                    <img src="${p.av || DEF_AV}" class="avatar-sm" onclick="viewProfile('${p.uid}')">
+                    <b>${p.author}</b>
+                </div>
+                <div>${p.text}</div>
+                ${p.img ? `<img src="${p.img}" class="post-img">` : ''}
+                <div style="margin-top:10px; opacity:0.6; font-size:18px">
+                    <i class="fa-heart ${p.likes.includes(auth.currentUser.uid) ? 'fa-solid' : 'fa-regular'}" 
+                       onclick="likePost('${doc.id}', ${JSON.stringify(p.likes)})" style="cursor:pointer; color:${p.likes.includes(auth.currentUser.uid) ? '#ff4757' : 'inherit'}"></i> ${p.likes.length}
+                </div>
+            `;
+            return div;
+        }
+
+        async function likePost(id, likes) {
+            const act = likes.includes(auth.currentUser.uid) ? 'arrayRemove' : 'arrayUnion';
+            await db.collection("posts").doc(id).update({ likes: firebase.firestore.FieldValue[act](auth.currentUser.uid) });
+        }
 
         // Поиск
-        async function searchUsers() {
-            const q = document.getElementById('search-input').value.toLowerCase();
-            const results = document.getElementById('user-results');
-            if(!q) { results.innerHTML = ""; return; }
-            
-            const snap = await db.collection("users").limit(10).get();
-            results.innerHTML = "";
+        async function searchUsers(q) {
+            if(!q.trim()) return;
+            const snap = await db.collection("users").get();
+            const res = document.getElementById('search-results');
+            res.innerHTML = "";
             snap.forEach(doc => {
                 const u = doc.data();
-                if(u.name.toLowerCase().includes(q)) {
-                    results.innerHTML += `
-                        <div class="user-item">
-                            <img src="${u.avatar || DEFAULT_AVATAR}" class="avatar" style="width:40px; height:40px">
-                            <div>
-                                <b>${u.name} ${u.isVerified ? '✅' : ''}</b><br>
-                                <span class="status-badge">${u.status || 'Статус не задан'}</span>
+                if(u.name.toLowerCase().includes(q.toLowerCase())) {
+                    res.innerHTML += `
+                        <div class="card user-row">
+                            <div class="user-row-info" onclick="viewProfile('${doc.id}')">
+                                <img src="${u.av || DEF_AV}" class="avatar-sm">
+                                <b>${u.name}</b>
                             </div>
+                            <button class="btn btn-outline" onclick="viewProfile('${doc.id}')">Профиль</button>
                         </div>
                     `;
                 }
             });
+        }
+
+        // ЛИЧНЫЕ СООБЩЕНИЯ
+        function openChat(uid, name) {
+            chatTarget = uid;
+            document.getElementById('chat-with').innerText = "Чат с " + name;
+            showSection('chat');
+            loadMessages();
+        }
+
+        async function sendDirectMessage() {
+            const input = document.getElementById('im-input');
+            if(!input.value.trim() || !chatTarget) return;
+            const msg = {
+                from: auth.currentUser.uid,
+                to: chatTarget,
+                text: input.value,
+                date: firebase.firestore.FieldValue.serverTimestamp()
+            };
+            await db.collection("messages").add(msg);
+            input.value = "";
+        }
+
+        function loadMessages() {
+            db.collection("messages")
+              .where("from", "in", [auth.currentUser.uid, chatTarget])
+              .orderBy("date", "asc")
+              .onSnapshot(snap => {
+                  const box = document.getElementById('im-box');
+                  box.innerHTML = "";
+                  snap.forEach(doc => {
+                      const m = doc.data();
+                      if((m.from === auth.currentUser.uid && m.to === chatTarget) || (m.from === chatTarget && m.to === auth.currentUser.uid)) {
+                          const div = document.createElement('div');
+                          div.className = `bubble ${m.from === auth.currentUser.uid ? 'sent' : 'received'}`;
+                          div.innerText = m.text;
+                          box.appendChild(div);
+                      }
+                  });
+                  box.scrollTop = box.scrollHeight;
+              });
+        }
+
+        async function renderDialogs() {
+            const snap = await db.collection("messages").where("to", "==", auth.currentUser.uid).get();
+            const list = document.getElementById('dialogs-list');
+            list.innerHTML = "";
+            let uniqueUsers = [...new Set(snap.docs.map(d => d.data().from))];
+            
+            for(let uid of uniqueUsers) {
+                const uDoc = await db.collection("users").doc(uid).get();
+                const u = uDoc.data();
+                list.innerHTML += `
+                    <div class="card user-row" onclick="openChat('${uid}', '${u.name}')">
+                        <div class="user-row-info">
+                            <img src="${u.av || DEF_AV}" class="avatar-sm">
+                            <b>${u.name}</b>
+                        </div>
+                        <i class="fa-solid fa-chevron-right"></i>
+                    </div>
+                `;
+            }
         }
     </script>
 </body>
